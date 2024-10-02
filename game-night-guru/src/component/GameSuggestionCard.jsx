@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import gameLibrary from './gamelibrary';
+import gameLibrary from './gamelibrarytestdata';
 
 const GameSuggestionCard = () => {
   const [players, setPlayers] = useState('');
