@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
-import gameLibrary from './gamelibrarytestdata';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const GameSuggestionCard = () => {
   const [players, setPlayers] = useState('');
   const [time, setTime] = useState('');
   const [suggestedGames, setSuggestedGames] = useState([]);
+  const [allGames, setAllGames] = useState([]);
+
+  useEffect(() => {
+    fetchGames();
+  }, []);
+
+  const fetchGames = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/games');
+      setAllGames(response.data);
+    } catch (error) {
+      console.error('Error fetching games:', error);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const availableGames = gameLibrary.filter(game => 
-      game.minNumOfPlayer <= parseInt(players) &&
-      game.maxNumOfPlayer >= parseInt(players)
-      // We could add a time filter here if we had that information in our game library
+    const availableGames = allGames.filter(game => 
+      game.min_players <= parseInt(players) &&
+      game.max_players >= parseInt(players) &&
+      game.playing_time <= parseInt(time)
     );
     setSuggestedGames(availableGames);
   };
@@ -49,7 +63,7 @@ const GameSuggestionCard = () => {
           <h3>Suggested Games:</h3>
           <ul>
             {suggestedGames.map(game => (
-              <li key={game.title}>{game.title}</li>
+              <li key={game.id}>{game.name}</li>
             ))}
           </ul>
         </div>

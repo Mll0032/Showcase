@@ -5,7 +5,7 @@ import GameSuggestionCard from './GameSuggestionCard';
 const Home = () => {
   return (
     <div className="home">
-      <h2>Welcome to Game Night Guru</h2>
+      <h2>Welcome to Game Night Nexus</h2>
       <GameSuggestionCard />
     </div>
   );
