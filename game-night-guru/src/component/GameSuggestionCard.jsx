@@ -35,7 +35,7 @@ const GameSuggestionCard = () => {
       <h2 className="card-title">Let's Play!</h2>
       <form onSubmit={handleSubmit} className="game-form">
         <div className="form-group">
-          <label htmlFor="players">How many players?</label>
+          <label htmlFor="players">How many players?<br></br></label>
           <input 
             type="number" 
             id="players" 
@@ -46,7 +46,7 @@ const GameSuggestionCard = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="time">How much time do you have? (minutes)</label>
+          <label htmlFor="time">How much time do you have? <br></br></label>
           <input 
             type="number" 
             id="time" 

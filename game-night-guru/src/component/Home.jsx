@@ -4,11 +4,13 @@ import GameSuggestionCard from './GameSuggestionCard';
 
 const Home = () => {
   return (
+    <div className="hero-section">
     <div className="home">
-      <div className="hero-section">
-      <h2>Welcome to Game Night Nexus</h2>
+      <div>
+      <h2 className='home-border'>Welcome to Game Night Nexus</h2>
       </div>
       <GameSuggestionCard />
+    </div>
     </div>
   );
 };

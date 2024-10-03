@@ -30,6 +30,16 @@
   --color-text-secondary: #a0a0b8;
 }
 
+.home-border {
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  max-width: px;
+  margin: auto;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-text);
@@ -114,6 +124,16 @@ h2 {
   
 }
 
+.library-title {
+  background-color: var(--color-surface);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  max-width: px;
+  margin: auto;
+}
+
 .card-title, .library-title {
   color: var(--color-text);
   font-size: 1.5rem;
@@ -142,7 +162,7 @@ h2 {
 .form-group label {
   color: var(--color-text-secondary);
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: 1.5rem;
 }
 
 .add-game-form input {
@@ -335,7 +355,7 @@ button:hover::after {
 .hero-section {
   text-align: center;
   padding: 4rem 1rem;
-  background-image: './assets/swirlingNexus.jpg';
+  background-image: url('./assets/swirlingNexus.jpg');
   background-size: cover;
   background-position: center;
   color: var(--color-text);

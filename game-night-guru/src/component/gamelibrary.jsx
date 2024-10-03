@@ -81,6 +81,7 @@ const GameLibrary = () => {
   };
 
   return (
+    <div className='hero-section'>
     <div className="game-library">
       <h2 className="library-title">Game Library</h2>
       
@@ -90,7 +91,7 @@ const GameLibrary = () => {
             type="text"
             value={searchQuery}
             onChange={handleInputChange}
-            placeholder="Enter game name"
+            placeholder="Enter game name to add to library"
             required
             onFocus={() => setShowSuggestions(true)}
           />
@@ -108,6 +109,7 @@ const GameLibrary = () => {
         <button type="submit">Add Game</button>
       </form>
 
+    
       <div className="game-grid">
         {games.map((game) => (
           <div key={game.id} className="game-card">
@@ -122,6 +124,7 @@ const GameLibrary = () => {
           </div>
         ))}
       </div>
+    </div>
     </div>
   );
 };
