@@ -28,7 +28,8 @@ const GameLibrary = () => {
   const fetchGames = async () => {
     try {
       const response = await axios.get('http://localhost:3001/api/games');
-      setGames(response.data);
+      const sortedGames = response.data.sort((a, b) => a.name.localeCompare(b.name));
+      setGames(sortedGames);
     } catch (error) {
       console.error('Error fetching games:', error);
     }
@@ -63,9 +64,14 @@ const GameLibrary = () => {
   const addGame = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/api/add-game', { gameName: searchQuery });
+      const response = await axios.post('http://localhost:3001/api/add-game', { gameName: searchQuery });
       setSearchQuery('');
-      fetchGames();
+      // Update the games state with the new game added
+      setGames(prevGames => {
+        const updatedGames = [...prevGames, response.data];
+        // Sort the updated games array
+        return updatedGames.sort((a, b) => a.name.localeCompare(b.name));
+      });
     } catch (error) {
       console.error('Error adding game:', error);
     }
@@ -74,7 +80,11 @@ const GameLibrary = () => {
   const removeGame = async (gameId) => {
     try {
       await axios.delete(`http://localhost:3001/api/games/${gameId}`);
-      setGames(prevGames => prevGames.filter(game => game.id !== gameId));
+      setGames(prevGames => {
+        const updatedGames = prevGames.filter(game => game.id !== gameId);
+        // Sort the updated games array
+        return updatedGames.sort((a, b) => a.name.localeCompare(b.name));
+      });
     } catch (error) {
       console.error('Error removing game:', error);
     }
@@ -86,16 +96,18 @@ const GameLibrary = () => {
       <h2 className="library-title">Game Library</h2>
       
       <form onSubmit={addGame} className="add-game-form">
+        <div className='auto-complete1'>
         <div ref={wrapperRef} className="autocomplete-wrapper">
           <input
             type="text"
             value={searchQuery}
             onChange={handleInputChange}
-            placeholder="Enter game name to add to library"
+            placeholder="Enter game name to add"
             required
             onFocus={() => setShowSuggestions(true)}
           />
           <FaSearch className="search-icon" />
+          </div>
           {showSuggestions && searchResults.length > 0 && (
             <ul className="search-results">
               {searchResults.map(game => (
@@ -130,3 +142,12 @@ const GameLibrary = () => {
 };
 
 export default GameLibrary;
+
+
+//TODO: Remove game currently when you add a game you have to refresh the page to remove a game. So in the event you accidentally add a game 
+// you can remove it only once you have refreshed the page. Add functionality that when you hit add game it refreshes the server. 
+
+//TODO: Add a 5 star rating system to the games in your library
+
+//TODO: Add a sorting method to sort your favorites by rating of 1-5 stars
+

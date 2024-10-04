@@ -8,6 +8,7 @@ const Home = () => {
     <div className="home">
       <div>
       <h2 className='home-border'>Welcome to Game Night Nexus</h2>
+      <p className='home-p'>Your ultimate portal for organizing board game adventures</p>
       </div>
       <GameSuggestionCard />
     </div>
