@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { FaSearch, FaFileImport } from 'react-icons/fa';
+import { FaSearch, FaFileImport, FaTrash } from 'react-icons/fa';
 
 
 const GameLibrary = () => {
@@ -14,6 +14,7 @@ const GameLibrary = () => {
   const [importStatus, setImportStatus] = useState('');
   const [error, setError] = useState(null);
   const wrapperRef = useRef(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     fetchGames();
@@ -229,6 +230,25 @@ const GameLibrary = () => {
     }
   };
 
+  const handleClearLibrary = async () => {
+    setShowConfirmDialog(true);
+  };
+
+  const confirmClearLibrary = async () => {
+    try {
+      await axios.delete('http://localhost:3001/api/clear-library');
+      setShowConfirmDialog(false);
+      fetchGames(); // Refresh the game list after clearing
+      setImportProgress('Library cleared successfully');
+    } catch (error) {
+      console.error('Error clearing library:', error);
+      setError(`Error clearing library: ${error.message}`);
+    }
+  };
+
+  const cancelClearLibrary = () => {
+    setShowConfirmDialog(false);
+  };
   
 
   return (
@@ -271,6 +291,9 @@ const GameLibrary = () => {
         </div>
         <button type="submit">Add Game</button>
       </form>
+      <div>
+        <h1>-or-</h1>
+      </div>
       <form onSubmit={importBggLibrary} className="import-bgg-form">
           <input
             type="text"
@@ -284,8 +307,11 @@ const GameLibrary = () => {
             <FaFileImport /> {isImporting ? 'Importing...' : 'Import BGG Library'}
           </button>
         </form>
+
         {importProgress && <p className="import-progress">{importProgress}</p>}
         {error && <p className="error-message">{error}</p>}
+
+        
       <div className="game-grid">
         {games.map((game) => (
           <div key={game.id || game.bgg_id} className="game-card">
@@ -301,6 +327,17 @@ const GameLibrary = () => {
         ))}
       </div>
     </div>
+    <button onClick={handleClearLibrary} className="clear-library-button">
+          <FaTrash /> Clear Library
+        </button>
+
+        {showConfirmDialog && (
+          <div className="confirm-dialog">
+            <p>Are you sure you want to clear your entire library? This action cannot be undone.</p>
+            <button onClick={confirmClearLibrary}>Yes, Clear Library</button>
+            <button onClick={cancelClearLibrary}>Cancel</button>
+          </div>
+        )}
     </div>
   );
 };

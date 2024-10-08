@@ -264,5 +264,20 @@ app.post('/api/import-bgg-library', async (req, res) => {
   res.end();
 });
 
+app.delete('/api/clear-library', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    try {
+      await connection.query('DELETE FROM games');
+      res.json({ message: 'Library cleared successfully' });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error clearing library:', error);
+    res.status(500).json({ error: 'Error clearing library', details: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
