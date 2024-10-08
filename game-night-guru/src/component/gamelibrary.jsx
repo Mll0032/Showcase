@@ -263,7 +263,7 @@ const GameLibrary = () => {
             type="text"
             value={searchQuery}
             onChange={handleInputChange}
-            placeholder="Enter game name to add"
+            placeholder="Enter game name"
             required
             onFocus={() => setShowSuggestions(true)}
           />
