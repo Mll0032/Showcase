@@ -493,3 +493,42 @@ button:hover::after {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s, box-shadow 0.3s;
 }
+
+.search-result-image, .game-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.search-result-image {
+  margin-right: 1rem;
+}
+
+.game-image {
+  width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.search-result-image.loading, .game-image.loading {
+  opacity: 0.5;
+}
+
+.search-result-image.loaded, .game-image.loaded {
+  opacity: 1;
+}
+
+.search-result-image.placeholder {
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-result-image.placeholder::after {
+  content: 'No Image';
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+}
