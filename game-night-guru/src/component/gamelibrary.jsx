@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { FaSearch, FaFileImport, FaTrash } from 'react-icons/fa';
-
+import api from './api';
 
 const GameLibrary = () => {
   const [games, setGames] = useState([]);
@@ -17,6 +17,21 @@ const GameLibrary = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await axios.get('http://localhost:3001/api/games', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setGames(response.data);
+        } else {
+          console.error('No token found, cannot fetch games');
+        }
+      } catch (error) {
+        console.error('Error fetching games:', error);
+      }
+    };
     fetchGames();
   }, []);
 
@@ -32,24 +47,42 @@ const GameLibrary = () => {
     };
   }, [wrapperRef]);
 
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      const token = localStorage.getItem('token');
+      console.log('Retrieved token:', token);
+      if (token) {
+        const response = await axios.get('/api/games', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setGames(response.data);
+      }
+    };
+    fetchLibrary();
+  }, []);
+
   const fetchGames = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/games');
-      const sortedGames = response.data.sort((a, b) => a.name.localeCompare(b.name));
-      setGames(sortedGames);
+      const token = localStorage.getItem('token');
+      console.log('Retrieved token:', token);
+      if (!token) {
+        throw new Error('No token found, please log in');
+      }
+      
+      const response = await axios.get('http://localhost:3001/api/games', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setGames(response.data);
     } catch (error) {
-      console.error('Error fetching games:', error);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    setSearchQuery(e.target.value);
-    if (e.target.value.length > 1) {
-      fetchSearchResults(e.target.value);
-      setShowSuggestions(true);
-    } else {
-      setSearchResults([]);
-      setShowSuggestions(false);
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        alert('Session expired, please log in again.');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      } else {
+        console.error('Error fetching games:', error);
+      }
     }
   };
 
@@ -187,39 +220,46 @@ const GameLibrary = () => {
     setIsImporting(true);
     setImportProgress('Starting import...');
     setError(null);
-
+  
     try {
+      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+  
       const response = await fetch('http://localhost:3001/api/import-bgg-library', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Include the authorization token here
         },
         body: JSON.stringify({ username: bggUsername }),
       });
-
+  
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in again.');
+      }
+  
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-
+  
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        
+  
         const decodedChunk = decoder.decode(value, { stream: true });
         const lines = decodedChunk.split('\n\n');
-        
+  
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
               setImportProgress(data.message);
-              console.log('Progress update:', data.message); // Add this line for debugging
+              console.log('Progress update:', data.message); // Debugging log
             } catch (error) {
               console.error('Error parsing progress data:', error);
             }
           }
         }
       }
-
+  
       setIsImporting(false);
       fetchGames(); // Refresh the game list after import
     } catch (error) {
@@ -229,6 +269,7 @@ const GameLibrary = () => {
       setError(`Error: ${error.message}`);
     }
   };
+  
 
   const handleClearLibrary = async () => {
     setShowConfirmDialog(true);
@@ -250,6 +291,9 @@ const GameLibrary = () => {
     setShowConfirmDialog(false);
   };
   
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <div className='hero-section'>
@@ -291,6 +335,7 @@ const GameLibrary = () => {
         </div>
         <button type="submit">Add Game</button>
       </form>
+      
       <div>
         <h1>-or-</h1>
       </div>

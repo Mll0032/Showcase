@@ -6,18 +6,62 @@ const GameSuggestionCard = () => {
   const [time, setTime] = useState(30);
   const [suggestedGames, setSuggestedGames] = useState([]);
   const [allGames, setAllGames] = useState([]);
+  const [games, setGames] = useState([]);
 
   useEffect(() => {
     fetchGames();
   }, []);
 
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await axios.get('http://localhost:3001/api/games', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          setGames(response.data);
+        } else {
+          console.error('No token found, cannot fetch games');
+        }
+      } catch (error) {
+        console.error('Error fetching games:', error);
+      }
+    };
+    fetchGames();
+  }, []);
+
   const fetchGames = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/games');
-      setAllGames(response.data);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found, please log in');
+      }
+  
+      const response = await axios.get('http://localhost:3001/api/games', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setGames(response.data);
     } catch (error) {
-      console.error('Error fetching games:', error);
+      if (error.response && error.response.status === 403) {
+        alert('Your session has expired. Please log in again.');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      } else if (error.message.includes('No token found')) {
+        window.location.href = '/login';
+      } else {
+        console.error('Error fetching games:', error);
+      }
     }
+  };
+  
+
+  const handleInputChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   const handlePlayersChange = (e) => {

@@ -39,6 +39,7 @@
   margin: 1rem 0;
   max-width: px;
   margin: auto;
+  margin-bottom: 16px;
 }
 
 .home-border {
@@ -143,6 +144,7 @@ h2 {
   margin: 1rem 0;
   max-width: px;
   margin: auto;
+  
 }
 
 .card-title, .library-title {
@@ -192,11 +194,13 @@ h2 {
   font-size: 1rem;
   width: 100%;
   transition: border-color 0.3s;
+  padding-right: 2rem;
 }
 
 .add-game-form input:focus {
   outline: none;
   border-color: var(--color-primary);
+  padding-right: 3rem;
 }
 
 .form-group input, .add-game-form input {
@@ -288,8 +292,6 @@ button:hover::after {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
- 
-  
 }
 
 .game-image {
@@ -334,6 +336,7 @@ button:hover::after {
   transform: translateY(-50%);
   color: var(--color-text-secondary);
   font-size: 1.5rem;
+  pointer-events: none;
 }
 
 .search-results {
@@ -625,10 +628,14 @@ button:hover::after {
   text-align: center;
   max-width: 500px;
   margin: 2rem auto;
-  background-color: var(--color-surface);
   padding: 2rem;
-  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-background);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+  margin-top: 16px;
+
 }
 
 .add-game-form input,
@@ -879,4 +886,67 @@ button:hover::after {
   .tech-icon span {
     font-size: 0.8rem;
   }
+
+  .logo-container svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100px;
+    height: auto;
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+  }
+  
+  .logo-container svg:hover {
+    transform: scale(1.1); /* Scale the logo slightly on hover */
+    filter: drop-shadow(0 0 15px #ff33cc); /* Adds a glowing shadow on hover */
+  }
+
+  .auth-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: var(--color-surface);
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  .auth-container h2 {
+    text-align: center;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+  }
+  
+  .auth-container input {
+    width: 100%;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--color-primary);
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-size: 1rem;
+  }
+  
+  .auth-container button {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .auth-container button:hover {
+    background-color: var(--color-secondary);
+  }
+  
+  .error {
+    color: red;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+
 }
+

@@ -27,6 +27,9 @@ const About = () => {
           Game Night Nexus is a passion project born out of my love for board games and my desire to create a tool that enhances the board gaming experience. As an avid board game enthusiast, I often found myself struggling to organize game nights and keep track of my growing collection. This project aims to solve those problems and more.
         </p>
         <p>
+          By building this application, I've not only created a useful tool for myself and other board game enthusiasts but I also honed my skills in full-stack web development.
+        </p>
+        <p>
           The main functionality of Game Night Nexus includes:
         </p>
         <ul>
@@ -36,7 +39,7 @@ const About = () => {
           <li>Providing game suggestions based on player count and available time</li>
         </ul>
         <p>
-          By building this application, I've not only created a useful tool for myself and other board game enthusiasts but I also honed my skills in full-stack web development.
+          If you have a boardgamegeek.com account feel free to use your username to upload your library. If not use this one: Lanc1988
         </p>
       </section>
 
