@@ -1,3 +1,5 @@
+// src/component/Login.jsx
+
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -9,40 +11,47 @@ const Login = ({ setToken }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/login', { email, password });
+      const response = await axios.post('http://localhost:3001/api/login', { email, password });
       const token = response.data.token;
       localStorage.setItem('token', token);
-      setToken(token); // Assuming you're using a React state to store the token as well
-      window.location.href = '/library'; // Redirect user to their library after storing the token
+      setToken(token);
+      window.location.href = '/library';
     } catch (error) {
       console.error('Login failed:', error);
-      alert('Login failed. Please check your credentials.');
+      setError('Login failed. Please check your credentials.');
     }
   };
-  
-
 
   return (
     <div className="auth-container">
-      <h2>Login</h2>
-      {error && <p className="error">{error}</p>}
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Login</button>
+      <h2 className="auth-title">Login</h2>
+      {error && <p className="auth-error">{error}</p>}
+      <form onSubmit={handleLogin} className="auth-form">
+        <div className="form-group">
+          <input
+            type="email"
+            placeholder="Email"
+            className="auth-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Password"
+            className="auth-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit" className="auth-button">Login</button>
       </form>
+      <p className="auth-switch">
+        Don't have an account? <a href="/signup">Sign Up</a>
+      </p>
     </div>
   );
 };

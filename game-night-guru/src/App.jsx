@@ -4,7 +4,7 @@ import Header from './component/Header';
 import Home from './component/Home';
 import GameLibrary from './component/GameLibrary';
 import About from './component/About'
-import Signup from './component/SignupAndLogin';
+import Signup from './component/Signup';
 import Login from './component/Login';
 import './App.css';
 
