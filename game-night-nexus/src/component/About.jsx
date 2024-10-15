@@ -39,7 +39,7 @@ const About = () => {
           <li>Providing game suggestions based on player count and available time</li>
         </ul>
         <p>
-          If you have a boardgamegeek.com account feel free to use your username to upload your library. If not use this one: Lanc1988 it has 94 games. Note that the BoardGameGeek api only allows for small fetch request so large libraires may take a moment to load. Thank you for your patients.
+          If you have a boardgamegeek.com account feel free to use your username to upload your library. If not use this one: Lanc1988
         </p>
       </section>
 
