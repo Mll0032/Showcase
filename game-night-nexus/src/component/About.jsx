@@ -39,7 +39,7 @@ const About = () => {
           <li>Providing game suggestions based on player count and available time</li>
         </ul>
         <p>
-          If you have a boardgamegeek.com account feel free to use your username to upload your library. If not use this one: Lanc1988
+          If you have a boardgamegeek.com account feel free to use your username to upload your library. If not use this one: Lanc1988 Note that BoardGameGeek has API rate limits that make a short load time.
         </p>
       </section>
 
