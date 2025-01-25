@@ -9,7 +9,10 @@ const { body, validationResult } = require('express-validator');
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Updated to match Vite's default port
+  credentials: true,
+}));
 
 // MySQL connection pool
 const pool = mysql.createPool({
@@ -47,34 +50,46 @@ const authenticateJWT = (req, res, next) => {
 // Route to add a game to the user's library
 app.post('/api/add-game', authenticateJWT, async (req, res) => {
   const { gameName } = req.body;
-  const userId = req.user.userId;
-  try {
-    const searchResponse = await axios.get(`https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(gameName)}&type=boardgame`);
-    const searchResult = await xml2js.parseStringPromise(searchResponse.data);
-    
-    if (searchResult.items.item && searchResult.items.item.length > 0) {
-      const gameId = searchResult.items.item[0].$.id;
-      const gameResponse = await axios.get(`https://boardgamegeek.com/xmlapi2/thing?id=${gameId}`);
-      const gameResult = await xml2js.parseStringPromise(gameResponse.data);
-      const game = gameResult.items.item[0];
+  console.log('Received gameName:', gameName);
 
-      const newGame = {
+  if (!gameName) {
+    return res.status(400).json({ error: 'Game name is required' });
+  }
+
+  try {
+    // Search for the game to get its ID
+    const searchResponse = await axios.get(
+      `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(gameName)}&type=boardgame`
+    );
+    const searchResult = await xml2js.parseStringPromise(searchResponse.data);
+
+    if (searchResult.items.item && searchResult.items.item.length > 0) {
+      // Assume the first result is the desired game
+      const gameId = searchResult.items.item[0].$.id;
+
+      // Fetch game details
+      const gameResponse = await axios.get(
+        `https://boardgamegeek.com/xmlapi2/thing?id=${gameId}&stats=1`
+      );
+      const gameData = await xml2js.parseStringPromise(gameResponse.data);
+      const gameItem = gameData.items.item[0];
+
+      const gameDetails = {
+        user_id: req.user.userId,
         bgg_id: gameId,
-        name: game.name[0].$.value,
-        image_url: game.image[0],
-        min_players: game.minplayers[0].$.value,
-        max_players: game.maxplayers[0].$.value,
-        playing_time: game.playingtime[0].$.value,
-        description: game.description[0],
+        name: gameItem.name[0].$.value,
+        year_published: gameItem.yearpublished ? gameItem.yearpublished[0].$.value : 'N/A',
+        min_players: gameItem.minplayers ? gameItem.minplayers[0].$.value : null,
+        max_players: gameItem.maxplayers ? gameItem.maxplayers[0].$.value : null,
+        playing_time: gameItem.playingtime ? gameItem.playingtime[0].$.value : null,
+        image_url: gameItem.image ? gameItem.image[0] : null,
       };
 
+      // Save the game to your database
       const connection = await pool.getConnection();
       try {
-        await connection.query(
-          'INSERT INTO games (user_id, bgg_id, name, image_url, min_players, max_players, playing_time, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          [userId, newGame.bgg_id, newGame.name, newGame.image_url, newGame.min_players, newGame.max_players, newGame.playing_time, newGame.description]
-        );
-        res.json(newGame);
+        await connection.query('INSERT INTO user_games SET ?', gameDetails);
+        res.json({ message: 'Game added successfully', game: gameDetails });
       } finally {
         connection.release();
       }
@@ -82,19 +97,52 @@ app.post('/api/add-game', authenticateJWT, async (req, res) => {
       res.status(404).json({ error: 'Game not found' });
     }
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Error fetching or storing game data' });
+    console.error('Error adding game:', error);
+    res.status(500).json({ error: 'Error adding game', details: error.message });
+  }
+});
+
+// Route to search for games
+app.get('/api/search-games', async (req, res) => {
+  const query = req.query.query;
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter is required' });
+  }
+
+  try {
+    const searchResponse = await axios.get(
+      `https://boardgamegeek.com/xmlapi2/search?query=${encodeURIComponent(query)}&type=boardgame`
+    );
+    const searchResult = await xml2js.parseStringPromise(searchResponse.data);
+
+    if (searchResult.items.item && searchResult.items.item.length > 0) {
+      const games = searchResult.items.item.map((item) => ({
+        id: item.$.id,
+        name: item.name[0].$.value,
+        yearPublished: item.yearpublished ? item.yearpublished[0].$.value : 'N/A',
+      }));
+      res.json(games);
+    } else {
+      res.json([]);
+    }
+  } catch (error) {
+    console.error('Error fetching search results:', error);
+    res.status(500).json({ error: 'Error fetching search results' });
   }
 });
 
 // Route to get all games for the logged-in user
-app.get('/api/games', authenticateJWT, async (req, res) => {
-  const userId = req.user.userId;
+app.get('/api/user_games', authenticateJWT, async (req, res) => {
+  const userId = req.user.userId; // from the JWT
   try {
     const connection = await pool.getConnection();
     try {
-      const [rows] = await connection.query('SELECT * FROM games WHERE user_id = ?', [userId]);
-      res.json(rows);
+      // Fetch from user_games where user_id = this user's ID
+      const [rows] = await connection.query(
+        'SELECT * FROM user_games WHERE user_id = ?',
+        [userId]
+      );
+      res.json(rows); // return the array of games
     } finally {
       connection.release();
     }
@@ -105,15 +153,20 @@ app.get('/api/games', authenticateJWT, async (req, res) => {
 });
 
 // Route to delete a game from the user's library
-app.delete('/api/games/:id', authenticateJWT, async (req, res) => {
-  const userId = req.user.userId;
-  const gameId = req.params.id;
+app.delete('/api/user_games/:id', authenticateJWT, async (req, res) => {
+  const userId = req.user.userId; // from JWT
+  const gameId = req.params.id;   // from route param
   try {
     const connection = await pool.getConnection();
     try {
-      const [result] = await connection.query('DELETE FROM games WHERE id = ? AND user_id = ?', [gameId, userId]);
+      const [result] = await connection.query(
+        'DELETE FROM user_games WHERE id = ? AND user_id = ?',
+        [gameId, userId]
+      );
       if (result.affectedRows === 0) {
-        res.status(404).json({ error: 'Game not found or not authorized to delete' });
+        res
+          .status(404)
+          .json({ error: 'Game not found or not authorized to delete' });
       } else {
         res.json({ message: 'Game removed successfully' });
       }
@@ -122,7 +175,9 @@ app.delete('/api/games/:id', authenticateJWT, async (req, res) => {
     }
   } catch (error) {
     console.error('Error removing game:', error);
-    res.status(500).json({ error: 'Error removing game from database' });
+    res
+      .status(500)
+      .json({ error: 'Error removing game from database', details: error.message });
   }
 });
 
@@ -222,7 +277,7 @@ app.post('/api/import-bgg-library', authenticateJWT, async (req, res) => {
         }
 
         await connection.query(
-          'INSERT INTO games (user_id, bgg_id, name, image_url, min_players, max_players, playing_time, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=VALUES(name), image_url=VALUES(image_url), min_players=VALUES(min_players), max_players=VALUES(max_players), playing_time=VALUES(playing_time), description=VALUES(description)',
+          'INSERT INTO user_games (user_id, bgg_id, name, image_url, min_players, max_players, playing_time, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=VALUES(name), image_url=VALUES(image_url), min_players=VALUES(min_players), max_players=VALUES(max_players), playing_time=VALUES(playing_time), description=VALUES(description)',
           [req.user.userId, game.bgg_id, game.name, game.image_url, game.min_players, game.max_players, game.playing_time, game.description]
         );
       }
@@ -245,7 +300,7 @@ app.delete('/api/clear-library', authenticateJWT, async (req, res) => {
   try {
     const connection = await pool.getConnection();
     try {
-      await connection.query('DELETE FROM games WHERE user_id = ?', [userId]);
+      await connection.query('DELETE FROM user_games WHERE user_id = ?', [userId]);
       res.json({ message: 'Library cleared successfully' });
     } finally {
       connection.release();
