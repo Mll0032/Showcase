@@ -1,12 +1,13 @@
 //localhost:3001/api/games
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback} from 'react';
 import axios from 'axios';
 import { FaSearch, FaFileImport, FaTrash } from 'react-icons/fa';
+import { debounce } from 'lodash';
 import api from './api';
 
 const GameLibrary = () => {
-  const [games, setGames] = useState([]);
+  const [user_games, setGames] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -21,7 +22,7 @@ const GameLibrary = () => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await axios.get('http://localhost:3001/api/games', {
+          const response = await axios.get('http://localhost:3001/api/user_games', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setGames(response.data);
@@ -52,7 +53,7 @@ const GameLibrary = () => {
       const token = localStorage.getItem('token');
       console.log('Retrieved token:', token);
       if (token) {
-        const response = await axios.get('/api/games', {
+        const response = await axios.get('/api/user_games', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setGames(response.data);
@@ -69,7 +70,7 @@ const GameLibrary = () => {
         throw new Error('No token found, please log in');
       }
       
-      const response = await axios.get('http://localhost:3001/api/games', {
+      const response = await axios.get('http://localhost:3001/api/user_games', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -86,27 +87,30 @@ const GameLibrary = () => {
     }
   };
 
-  const fetchSearchResults = async (query) => {
+  const fetchSearchResults = useCallback(debounce(async (query) => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/search-games?query=${encodeURIComponent(query)}`);
+      const response = await axios.get(`/api/search-games?query=${encodeURIComponent(query)}`);
       setSearchResults(response.data);
     } catch (error) {
       console.error('Error fetching search results:', error);
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.error(error.response.data);
-        console.error(error.response.status);
-        console.error(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.error('Error', error.message);
-      }
       setSearchResults([]);
     }
+  }, 500), []);
+  
+
+  // useEffect to call fetchSearchResults when searchQuery changes
+  useEffect(() => {
+    if (searchQuery.trim() !== '') {
+      fetchSearchResults(searchQuery);
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchQuery, fetchSearchResults]);
+
+  // Handle input change
+  const handleInputChanges = (e) => {
+    setSearchQuery(e.target.value);
+    setShowSuggestions(true);
   };
 
   const handleSuggestionClick = (game) => {
@@ -134,7 +138,7 @@ const GameLibrary = () => {
 
   const removeGame = async (gameId) => {
     try {
-      await axios.delete(`http://localhost:3001/api/games/${gameId}`);
+      await axios.delete(`http://localhost:3001/api/user_games/${gameId}`);
       setGames(prevGames => {
         const updatedGames = prevGames.filter(game => game.id !== gameId);
         // Sort the updated games array
@@ -303,6 +307,7 @@ const GameLibrary = () => {
       <form onSubmit={addGame} className="add-game-form">
         <div className='auto-complete1'>
         <div ref={wrapperRef} className="autocomplete-wrapper">
+
           <input
             type="text"
             value={searchQuery}
@@ -314,22 +319,18 @@ const GameLibrary = () => {
           <FaSearch className="search-icon" />
           
           {showSuggestions && searchResults.length > 0 && (
-            <ul className="search-results">
-              {searchResults.map(game => (
-                <li key={game.id} onClick={() => handleSuggestionClick(game)}>
-                  {game.image_url ? (
-                      <LazyImage 
-                        src={game.image_url} 
-                        alt={`${game.name} cover`} 
-                        className="search-result-image"
-                      />
-                    ) : (
-                      <div className="search-result-image placeholder"></div>
-                    )}
-                    <span>{game.name} ({game.yearPublished})</span>             
-                </li>
-              ))}
-            </ul>
+  <ul className="search-results">
+    {searchResults.map((game) => (
+      <li key={game.id} onClick={() => handleSuggestionClick(game)}>
+        <span>
+          {game.name} ({game.yearPublished})
+        </span>
+      </li>
+    ))}
+  </ul>
+)}
+          {showSuggestions && searchResults.length === 0 && (
+          <div className="no-results">No games found.</div>
           )}
         </div>
         </div>
@@ -358,7 +359,7 @@ const GameLibrary = () => {
 
         
       <div className="game-grid">
-        {games.map((game) => (
+        {user_games.map((game) => (
           <div key={game.id || game.bgg_id} className="game-card">
             <img src={game.image_url} alt={game.name} className="game-image" />
             <h3 className="game-title">{game.name}</h3>
