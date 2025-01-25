@@ -9,7 +9,7 @@ const About = () => {
       <h1>About Game Night Nexus</h1>
       
       <section className="personal-info">
-        <img src="https://media.licdn.com/dms/image/v2/C5603AQGbx1i-xFtWBQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1626375868743?e=1733961600&v=beta&t=qw1JR9YssotRB-q5PS7i5mhclzANWWsRFpfgEUqgdgA" />
+        <img src="https://media.licdn.com/dms/image/v2/C5603AQGbx1i-xFtWBQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1626375868743?e=1743033600&v=beta&t=JKNvCjoha2YkqO3tDtSkig5N64U7LgYJyVzcp-v7Guk" />
         <h2>Matthew Lawson</h2>
         <div className="social-links">
           <a href="https://www.linkedin.com/in/matthew-lawson-68b83916/">

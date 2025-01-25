@@ -10,15 +10,15 @@ const { body, validationResult } = require('express-validator');
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // Updated to match Vite's default port
+  origin: ['http://localhost:5173','http://localhost:5174'], // Updated to match Vite's default port
   credentials: true,
 }));
 
 // MySQL connection pool
 const pool = mysql.createPool({
   host: 'localhost',
-  user: 'mll0032',
-  password: '@Ilovematcha2',
+  user: 'game_night_nexus',
+  password: 'game_night_nexus',
   database: 'game_night_nexus',
   waitForConnections: true,
   connectionLimit: 10,
