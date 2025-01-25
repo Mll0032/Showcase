@@ -1036,4 +1036,39 @@ button:hover::after {
   .auth-title {
     font-size: 1.5rem;
   }
+
+/* Style for the suggestions dropdown */
+.search-results,
+.no-results {
+  position: absolute;
+  top: 100%; /* Position directly below the input */
+  left: 0;
+  width: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
 }
+
+.search-results li,
+.no-results {
+  padding: 0.75rem;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: background-color 0.3s ease;
+}
+
+.search-results li:hover {
+  background-color: var(--color-secondary);
+}
+
+.no-results {
+  text-align: center;
+}
+
+}
+
+
