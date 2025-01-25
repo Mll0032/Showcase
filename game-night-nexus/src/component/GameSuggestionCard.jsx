@@ -16,7 +16,7 @@ const GameSuggestionCard = () => {
           throw new Error('No token found, please log in');
         }
 
-        const response = await axios.get('http://localhost:3001/api/games', {
+        const response = await axios.get('http://localhost:3001/api/user_games', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
